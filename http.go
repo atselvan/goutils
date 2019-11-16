@@ -85,12 +85,12 @@ func WriteHTTPResp(w http.ResponseWriter, r *http.Request, responseCode int, res
 	w.Header().Set("Content-Type", "application/json")
 	out, err := json.MarshalIndent(response, "", "  ")
 	if err != nil {
-		WriteErrorResp(r, w, InternalServerErrorStatusCode, err)
+		WriteErrorResp(w, r, InternalServerErrorStatusCode, err)
 	}
 	w.WriteHeader(responseCode)
 	_, err = w.Write(out)
 	if err != nil {
-		WriteErrorResp(r, w, InternalServerErrorStatusCode, err)
+		WriteErrorResp(w, r, InternalServerErrorStatusCode, err)
 	}
 }
 
@@ -107,7 +107,7 @@ func WriteWarnResp(w http.ResponseWriter, r *http.Request, statusCode int, respo
 }
 
 // WriteErrResp writes an http error response and logs the outcome
-func WriteErrorResp(r *http.Request, w http.ResponseWriter, statusCode int, err error) {
+func WriteErrorResp(w http.ResponseWriter, r *http.Request, statusCode int, err error) {
 	response := ErrResponse{err.Error()}
 	WriteHTTPResp(w, r, statusCode, response)
 	Logger{r, err.Error()}.Error()
