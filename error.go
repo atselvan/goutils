@@ -13,17 +13,17 @@ type Error struct {
 }
 
 // getErrStr returns the error string
-func (e *Error) getErrStr() string {
+func (e Error) getErrStr() string {
 	return strings.TrimSpace(e.ErrStr)
 }
 
 // getErrorMsg returns the error message
-func (e *Error) getErrMsg() string {
+func (e Error) getErrMsg() string {
 	return e.ErrMsg
 }
 
 // NewError formats and returns a error
-func (e *Error) NewError() error {
+func (e Error) NewError() error {
 	if e.getErrStr() == "" {
 		return errors.New(e.getErrMsg())
 	} else {
