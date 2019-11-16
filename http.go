@@ -11,6 +11,7 @@ import (
 const (
 	SuccessStatusCode             = 200
 	CreatedStatusCode             = 201
+	FoundStatusCode				  = 302
 	BadRequestStatusCode          = 400
 	UnauthorizedStatusCode        = 401
 	NotFoundStatusCode            = 404
@@ -19,6 +20,7 @@ const (
 
 	SuccessStatus             = "200 OK"
 	CreatedStatus             = "201 Created"
+	FoundStatus				  = "302 Found"
 	BadReqStatus              = "400 Bad Request"
 	UnauthorizedStatus        = "401 Unauthorized"
 	NotFoundStatus            = "404 Not Found"

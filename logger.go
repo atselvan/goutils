@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"runtime/debug"
 )
 
 const (
@@ -17,10 +18,18 @@ type Logger struct {
 	Message interface{}
 }
 
+func (l Logger) EnableDebug() bool {
+	if os.Getenv("DEBUG_LOGS") == "true" {
+		return true
+	} else {
+		return false
+	}
+}
+
 // Info writes information logs
 func (l Logger) Info() {
 	var out string
-	infoLog := log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime)
+	infoLog := log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 	if l.Request != nil {
 		out = fmt.Sprintf(httpLogFormat, getRequesterIP(l.Request), l.Request.Method, l.Request.RequestURI, l.Message)
 	} else {
@@ -51,4 +60,7 @@ func (l Logger) Error() {
 		out = fmt.Sprintf(logFormat, l.Message)
 	}
 	errLog.Println(out)
+	if l.EnableDebug(){
+		debug.PrintStack()
+	}
 }
