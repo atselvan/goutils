@@ -62,7 +62,7 @@ func (l Logger) Error() {
 		out = fmt.Sprintf(logFormat, l.Message)
 	}
 	errLog.Println(out)
-	if l.EnableDebug(){
+	if l.EnableDebug() {
 		debug.PrintStack()
 	}
 }

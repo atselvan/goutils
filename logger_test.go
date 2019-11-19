@@ -86,4 +86,3 @@ func TestLogger_Error(t *testing.T) {
 		t.Error("Did not get the expected error log")
 	}
 }
-

@@ -18,7 +18,7 @@ func TestError_GetErrMsg(t *testing.T) {
 	if e.getErrMsg() != e.ErrMsg {
 		t.Errorf("Expected '%s', bug got '%s'", e.ErrMsg, e.getErrMsg())
 	}
- }
+}
 
 func TestError_NewError(t *testing.T) {
 	e := Error{
