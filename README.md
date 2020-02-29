@@ -1,2 +1,2 @@
-# go-utils
-Golang Utils
+# SOLO Golang Utils
+

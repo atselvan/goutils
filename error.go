@@ -3,35 +3,19 @@ package utils
 import (
 	"errors"
 	"fmt"
-	"strings"
 )
 
-// Error represents the error format
+// Error represents an error
 type Error struct {
-	ErrStr string
-	ErrMsg string
+	Message string
+	Detail  string
 }
 
-// getErrStr returns the error string
-func (e Error) getErrStr() string {
-	return strings.TrimSpace(e.ErrStr)
-}
-
-// getErrorMsg returns the error message
-func (e Error) getErrMsg() string {
-	return e.ErrMsg
-}
-
-// NewError formats and returns a error
+// NewError formats an error based on the provided message or detail or both in the error struct and returns an error
 func (e Error) NewError() error {
-	if e.getErrStr() == "" {
-		return errors.New(e.getErrMsg())
+	if e.Detail == "" {
+		return errors.New(e.Message)
 	} else {
-		return errors.New(fmt.Sprintf("%s : %s", e.getErrStr(), e.getErrMsg()))
+		return errors.New(fmt.Sprintf("%s : %s", e.Message, e.Detail))
 	}
-}
-
-// NewError creates and returns a new error and returns it
-func NewError(errStr string) error {
-	return errors.New(errStr)
 }
