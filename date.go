@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	dateFormatRegex  = `([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))`
+	dateFormatRegex  = `(^([0-9]{4})-([0-9]{2})-([0-9]{2})$)`
 	dateFormatLayout = "2006-01-02"
 
 	regexCompileErrMsg              = "Unable to compile regex"
@@ -22,32 +22,32 @@ const (
 )
 
 // IsValidDate checks if the provided date is of the format YYYY-MM-DD and if the date is valid
-// The method returns an error if the date is not valid
-func IsValidDate(date string) error {
-	dateFormatRx, err := regexp.Compile(dateFormatRegex)
+// The method returns a boolean to indicate if the data is valid or not and an error if the date is not valid
+func IsValidDate(date string) (bool, error) {
 	currentDate := time.Now()
+	dateFormatRx, err := regexp.Compile(dateFormatRegex)
 	if err != nil {
-		return Error{Message: regexCompileErrMsg, Detail: regexCompileErrDetail}.NewError()
+		return false, Error{Message: regexCompileErrMsg, Detail: regexCompileErrDetail}.NewError()
 	}
 	if !dateFormatRx.MatchString(date) {
-		return Error{Message: dateFormatErrMsg, Detail: dateFormatErrDetail}.NewError()
+		return false, Error{Message: dateFormatErrMsg, Detail: dateFormatErrDetail}.NewError()
 	}
 	d, err := time.Parse(dateFormatLayout, date)
 	if err != nil {
-		return Error{Message: invalidDateErrMsg, Detail: fmt.Sprintf(invalidDateErrDetail, err)}.NewError()
+		return false, Error{Message: invalidDateErrMsg, Detail: fmt.Sprintf(invalidDateErrDetail, err)}.NewError()
 	}
 	if d.Format(dateFormatLayout) > currentDate.Format(dateFormatLayout) {
-		return Error{Message: invalidDateErrMsg, Detail: greaterThanCurrentDateErrDetail}.NewError()
+		return false, Error{Message: invalidDateErrMsg, Detail: greaterThanCurrentDateErrDetail}.NewError()
 	}
-	return nil
+	return true, nil
 }
 
-// IsValidYear checks if the year is between 1960 and the current year
-// The method returns an error if the year is not valid
-func IsValidYear(year int) error {
+// IsValidYear checks if the year is between 1990 and the current year
+// The method returns a true or a false indicating if the year is valid or not and an error if the year is not valid
+func IsValidYear(year int) (bool, error) {
 	currentYear := time.Now().Year()
 	if year < 1990 || year > currentYear {
-		return Error{Message: invalidYearErrMsg, Detail: fmt.Sprintf(invalidYearErrDetail, currentYear)}.NewError()
+		return false, Error{Message: invalidYearErrMsg, Detail: fmt.Sprintf(invalidYearErrDetail, currentYear)}.NewError()
 	}
-	return nil
+	return true, nil
 }
