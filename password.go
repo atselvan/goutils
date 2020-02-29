@@ -14,7 +14,7 @@ func GetRandomPassword() string {
 	length := 23
 	buf := make([]byte, length)
 	buf[0] = digits[rand.Intn(len(digits))]
-	for i := 2; i < length; i++ {
+	for i := 1; i < length; i++ {
 		buf[i] = all[rand.Intn(len(all))]
 	}
 	rand.Shuffle(len(buf), func(i, j int) {
