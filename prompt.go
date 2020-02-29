@@ -7,6 +7,11 @@ import (
 	"strings"
 )
 
+const (
+	promptConfirmErrMsg             = "input can be either y/n"
+	promptSelectMoreMsg             = "Do you want to select one more ?"
+)
+
 // PromptString prompts a input menu on the console
 func PromptString(name string, validateFunc func(input string) error) (string, error) {
 

@@ -7,12 +7,25 @@ import (
 	"os"
 )
 
+const (
+	fileNotFoundErrMsg              = "File not found"
+	fileNotFoundErrDetail           = "the file %s was not found"
+	fileReadErrMsg                  = "Unable to read file"
+	fileCreateErrMsg                = "Unable to create a new file"
+	fileOpenErrMsg                  = "Unable to open file"
+	fileWriteErrMsg                 = "Unable to write to the file"
+	JsonMarshalErrMsg               = "JSON Marshal Error"
+	JsonUnmarshalErrMsg             = "JSON Unmarshal Error"
+	YamlMarshalErrMsg               = "YAML Marshal Error"
+	YamlUnmarshalErrMsg             = "YAML Unmarshal Error"
+)
+
 // ReadYamlFile reads a yaml file and puts the contents into the out variables
 // out variable should be a pointer to a valid struct
 // The method returns and error if reading a file or the unmarshal process fails
 func ReadYamlFile(filePath string, out interface{}) error {
 	data, err := ReadFile(filePath)
-	if err != nil {
+	if err != nil 	{
 		return err
 	}
 	err = yaml.Unmarshal(data, out)
