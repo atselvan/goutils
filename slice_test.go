@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -22,6 +23,12 @@ func TestEntryExists(t *testing.T) {
 	}
 }
 
+func ExampleEntryExists() {
+	slice := []string{"one", "two", "three"}
+	fmt.Println(EntryExists(slice, "two"))
+	// Output: true
+}
+
 func TestGetSliceEntryIndex(t *testing.T) {
 
 	slice := []string{"one", "two", "three"}
@@ -37,6 +44,12 @@ func TestGetSliceEntryIndex(t *testing.T) {
 	if result != -1 {
 		t.Errorf("Test Failed!, expected: %v, got: %v", -1, result)
 	}
+}
+
+func ExampleGetSliceEntryIndex() {
+	slice := []string{"one", "two", "three"}
+	fmt.Println(GetSliceEntryIndex(slice, "one"))
+	// Output: 0
 }
 
 func TestRemoveEntryFromSlice(t *testing.T) {
@@ -75,6 +88,12 @@ func TestRemoveEntryFromSlice(t *testing.T) {
 	}
 }
 
+func ExampleRemoveEntryFromSlice() {
+	slice := []string{"one", "two", "three"}
+	fmt.Println(RemoveEntryFromSlice(slice, "two"))
+	// Output: [one three]
+}
+
 func TestRemoveDuplicateEntries(t *testing.T) {
 	slice := []string{"one", "two", "two", "three", "three", "three", "four", "four", "four", "four"}
 	expectedResult := []string{"one", "two", "three", "four"}
@@ -84,6 +103,12 @@ func TestRemoveDuplicateEntries(t *testing.T) {
 	if !reflect.DeepEqual(result, expectedResult){
 		t.Errorf("Test Failed!, expected: %v, got: %v", expectedResult, result)
 	}
+}
+
+func ExampleRemoveDuplicateEntries() {
+	slice := []string{"one", "two", "two", "three", "three", "three", "four", "four", "four", "four"}
+	fmt.Println(RemoveDuplicateEntries(slice))
+	// output: [one two three four]
 }
 
 func TestCountDuplicateEntries(t *testing.T) {
@@ -102,6 +127,12 @@ func TestCountDuplicateEntries(t *testing.T) {
 	}
 }
 
+func ExampleCountDuplicateEntries() {
+	slice := []string{"one", "two", "two", "three", "three", "three"}
+	fmt.Println(CountDuplicateEntries(slice))
+	// Output: map[one:1 three:3 two:2]
+}
+
 func TestDuplicateEntryExists(t *testing.T) {
 	slice := []string{"one", "two", "two", "three", "three", "three", "four", "four", "four", "four"}
 
@@ -118,4 +149,10 @@ func TestDuplicateEntryExists(t *testing.T) {
 	if result == true {
 		t.Errorf("Test Failed!, expected: %v, got: %v", false, result)
 	}
+}
+
+func ExampleDuplicateEntryExists() {
+	slice := []string{"one", "two", "two"}
+	fmt.Println(DuplicateEntryExists(slice))
+	// Output: true
 }
