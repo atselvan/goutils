@@ -5,10 +5,6 @@ import (
 	"testing"
 )
 
-const (
-	testFailMsg = "Test Failed!, expected: %v, got: %v"
-)
-
 func TestEntryExists(t *testing.T) {
 
 	slice := []string{"one", "two", "three"}
