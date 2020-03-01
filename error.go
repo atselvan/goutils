@@ -15,7 +15,6 @@ type Error struct {
 func (e Error) NewError() error {
 	if e.Detail == "" {
 		return errors.New(e.Message)
-	} else {
-		return errors.New(fmt.Sprintf("%s : %s", e.Message, e.Detail))
 	}
+	return fmt.Errorf("%s : %s", e.Message, e.Detail)
 }

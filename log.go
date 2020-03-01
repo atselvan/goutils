@@ -40,10 +40,12 @@ func (l *Logger) GetLogLevel() string {
 	}
 }
 
+// GetMessage returns a formatted log message
 func (l *Logger) GetMessage() string {
 	return strings.Replace(l.Message, "\n", "", -1)
 }
 
+// GetError returns a formatted error log
 func (l *Logger) GetError() string {
 	return strings.Replace(l.Err.Error(), "\n", "", -1)
 }
@@ -85,10 +87,9 @@ func (l *Logger) Error() *log.Logger {
 
 // Debug generates the output log message and returns a new Debug logger
 func (l *Logger) Debug() *log.Logger {
+	l.GetLogMessage()
 	if l.GetLogLevel() == "DEBUG" {
-		l.GetLogMessage()
 		return log.New(os.Stdout, "DEBUG : ", log.Ldate|log.Ltime|log.Lshortfile)
-	} else {
-		return log.New(ioutil.Discard, "", log.LstdFlags)
 	}
+	return log.New(ioutil.Discard, "", log.LstdFlags)
 }

@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// GenerateRandomPassword generates a random string of upper + lower case alphabets and digits
+// GetRandomPassword generates a random string of upper + lower case alphabets and digits
 // which is 23 bits long and returns the string
 func GetRandomPassword() string {
 	rand.Seed(time.Now().UnixNano())

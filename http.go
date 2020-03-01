@@ -12,6 +12,7 @@ import (
 	"strings"
 )
 
+// HTTP util's constants
 const (
 	GetMethod    = "GET"
 	PostMethod   = "POST"
@@ -55,12 +56,16 @@ const (
 )
 
 var (
-	// Default log level
-	LogLevel      = "INFO"
-	ProxyEnabled  = false
+	// LogLevel log level setting. Default value is INFO
+	LogLevel = "INFO"
+	// ProxyEnabled enable proxy settings
+	ProxyEnabled = false
+	// ProxyProtocol protocol of the proxy server, http or https
 	ProxyProtocol string
-	ProxyHost     string
-	ProxyPort     string
+	// ProxyHost hostname of the proxy server
+	ProxyHost string
+	// ProxyPort port of the proxy server
+	ProxyPort string
 )
 
 // Request represents an HTTP request
@@ -78,7 +83,7 @@ type Request struct {
 	}
 }
 
-// Request body represents the format of a request body
+// RequestBody body represents the format of a request body
 type RequestBody struct {
 	Json []byte
 	Text string
@@ -235,22 +240,21 @@ func (r *Request) HttpRequest() error {
 	if r.Proxy.Enable == true {
 		if err := r.validateProxyDetails(); err != nil {
 			return err
-		} else {
-			proxyUrl, err := url.Parse(r.getProxyUrl())
-
-			if err != nil {
-				return Error{Message: ProxyUrlParseErrMsg, Detail: err.Error()}.NewError()
-			}
-
-			log := Logger{Message: fmt.Sprintf(proxyUsedMsg, proxyUrl)}
-			log.Debug().Println(log.Out)
-
-			transport := &http.Transport{
-				Proxy: http.ProxyURL(proxyUrl),
-			}
-
-			client.Transport = transport
 		}
+		proxyUrl, err := url.Parse(r.getProxyUrl())
+
+		if err != nil {
+			return Error{Message: ProxyUrlParseErrMsg, Detail: err.Error()}.NewError()
+		}
+
+		log := Logger{Message: fmt.Sprintf(proxyUsedMsg, proxyUrl)}
+		log.Debug().Println(log.Out)
+
+		transport := &http.Transport{
+			Proxy: http.ProxyURL(proxyUrl),
+		}
+
+		client.Transport = transport
 	}
 
 	authorisation := r.Request.Header.Get("Authorization")

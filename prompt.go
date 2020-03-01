@@ -68,9 +68,8 @@ func PromptConfirm(name string) (string, error) {
 		Validate: func(input string) error {
 			if strings.ToLower(input) == "y" || strings.ToLower(input) == "n" {
 				return nil
-			} else {
-				return errors.New(promptConfirmErrMsg)
 			}
+			return errors.New(promptConfirmErrMsg)
 		},
 	}
 
