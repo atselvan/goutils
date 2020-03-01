@@ -39,4 +39,5 @@ jobs:
         projectName: go-utils
         projectKey: github.com/atselvan/go-utils
       env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
