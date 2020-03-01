@@ -1,6 +1,6 @@
 # Golang Utils
 
-![Go Build](https://github.com/atselvan/go-utils/workflows/Go%20Build/badge.svg)
+[![Go Build](https://github.com/atselvan/go-utils/workflows/Go%20Build/badge.svg)](https://github.com/atselvan/go-utils/actions?query=workflow%3A%22Go+Build%22)
 [![godoc](https://img.shields.io/badge/godoc-docs-blue.svg?label=&logo=go)](https://godoc.org/github.com/atselvan/go-utils)
 [![Go Report Card](https://goreportcard.com/badge/github.com/atselvan/go-utils)](https://goreportcard.com/report/github.com/atselvan/go-utils)
 [![codecov](https://codecov.io/gh/atselvan/go-utils/branch/master/graph/badge.svg)](https://codecov.io/gh/atselvan/go-utils)
