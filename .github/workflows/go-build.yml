@@ -2,9 +2,10 @@ name: Go Build
 on: push
 jobs:
 
-  linux:
-    name: Linux Build
+  Build:
+    name: Build
     runs-on: ubuntu-latest
+    
     steps:
 
     - name: Set up Go 1.13
@@ -21,10 +22,21 @@ jobs:
         go get -v -t -d ./...
 
     - name: Test
-      run: go test -v .
-    
-    - name: Setup Gox
-      run: |
-        go get github.com/mitchellh/gox
-        gox -h
+      run: go test -coverprofile="coverage.txt" ./...
       
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: ./coverage.txt
+        flags: unittests
+        name: go-utils
+        yml: ./codecov.yml
+        
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@v1.1
+      with:
+        projectName: go-utils
+        projectKey: github.com/atselvan/go-utils
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
