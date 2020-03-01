@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-// HTTP util's constants
+// HTTP util constants
 const (
 	GetMethod    = "GET"
 	PostMethod   = "POST"
@@ -310,6 +310,10 @@ func WriteHTTPResp(w http.ResponseWriter, r *http.Request, responseCode int, res
 
 		w.WriteHeader(InternalServerErrorStatusCode)
 		_, err = w.Write(out)
+		if err != nil {
+			log := Logger{Message: WriteRespErrMsg, Err: err}
+			log.Error().Println(log.Out)
+		}
 	}
 
 	w.WriteHeader(responseCode)
@@ -321,6 +325,10 @@ func WriteHTTPResp(w http.ResponseWriter, r *http.Request, responseCode int, res
 
 		w.WriteHeader(InternalServerErrorStatusCode)
 		_, err = w.Write(out)
+		if err != nil {
+			log := Logger{Message: WriteRespErrMsg, Err: err}
+			log.Error().Println(log.Out)
+		}
 	}
 }
 

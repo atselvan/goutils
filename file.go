@@ -7,6 +7,7 @@ import (
 	"os"
 )
 
+// File util constants
 const (
 	fileNotFoundErrMsg    = "File not found"
 	fileNotFoundErrDetail = "the file %s was not found"
@@ -48,9 +49,8 @@ func WriteYamlFile(filePath string, in interface{}) error {
 	err = WriteFile(filePath, data)
 	if err != nil {
 		return err
-	} else {
-		return nil
 	}
+	return nil
 }
 
 // CreateFile creates a new file
@@ -59,9 +59,8 @@ func CreateFile(filePath string) (*os.File, error) {
 	f, err := os.Create(filePath)
 	if err != nil {
 		return f, Error{Message: fileCreateErrMsg, Detail: err.Error()}.NewError()
-	} else {
-		return f, nil
 	}
+	return f, nil
 }
 
 // OpenFile opens a file
@@ -70,9 +69,8 @@ func OpenFile(filePath string) (*os.File, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
 		return f, Error{Message: fileOpenErrMsg, Detail: err.Error()}.NewError()
-	} else {
-		return f, nil
 	}
+	return f, nil
 }
 
 // ReadFile checks if a file exists and if it does tries to reads the contents of the
@@ -115,7 +113,6 @@ func WriteFile(filePath string, data []byte) error {
 func FileExists(filePath string) bool {
 	if _, err := os.Stat(filePath); err != nil {
 		return false
-	} else {
-		return true
 	}
+	return true
 }
