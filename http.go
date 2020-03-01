@@ -41,6 +41,11 @@ const (
 	SuccessMsg                = "Success OK"
 	PathNotFound              = "Request path '%s' not found"
 
+	contentTypeKey = "Content-Type"
+	acceptKey = "Accept"
+	applicationJsonContentType = "application/json"
+	textPlainContentType = "text/plain"
+
 	WriteRespErrMsg               = "Unable to write any response on the writer"
 	BasicAuthErrMsg               = "401 unauthorized: Basic authentication is required"
 	InvalidProxyErrMsg            = "Invalid proxy details"
@@ -180,8 +185,8 @@ func (r *Request) NewRequest() error {
 			return Error{Message: reqCreateErrMsg, Detail: err.Error()}.NewError()
 		}
 
-		r.Request.Header.Set("Content-Type", "application/json")
-		r.Request.Header.Set("Accept", "application/json")
+		r.Request.Header.Set(contentTypeKey, applicationJsonContentType)
+		r.Request.Header.Set(acceptKey, applicationJsonContentType)
 
 	} else if r.Body.Text != "" {
 
@@ -191,7 +196,7 @@ func (r *Request) NewRequest() error {
 			return Error{Message: reqCreateErrMsg, Detail: err.Error()}.NewError()
 		}
 
-		r.Request.Header.Set("Content-Type", "text/plain")
+		r.Request.Header.Set(contentTypeKey, textPlainContentType)
 
 	} else {
 
@@ -301,7 +306,7 @@ func (r *Request) HttpRequest() error {
 
 // WriteHTTPResp writes an http response onto the response writer
 func WriteHTTPResp(w http.ResponseWriter, r *http.Request, responseCode int, response interface{}) {
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(contentTypeKey, applicationJsonContentType)
 
 	out, err := json.MarshalIndent(response, "", "  ")
 	if err != nil {
