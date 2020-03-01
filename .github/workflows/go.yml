@@ -33,7 +33,7 @@ jobs:
           name: go-utils
           yml: ./codecov.yml
 
-  Sonar Scan:
+  SonarScan:
     name: Sonar Scan
     runs-on: ubuntu-latest
     steps:
