@@ -1,5 +1,6 @@
-# IDE's
+# IDE's and Scanners
 .idea
+.scannerwork/
 
 # Binaries for programs and plugins
 *.exe
@@ -14,3 +15,4 @@
 # Output of the go coverage tool
 *.out
 coverage.html
+
