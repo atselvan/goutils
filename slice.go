@@ -1,7 +1,7 @@
 package utils
 
 const (
-	entryDoesNotExistMsg            = "The entry %s does not exist in the slice"
+	entryDoesNotExistMsg = "The entry %s does not exist in the slice"
 )
 
 // EntryExists checks if an entry exists in a slice of strings

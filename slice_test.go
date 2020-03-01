@@ -58,14 +58,14 @@ func TestRemoveEntryFromSlice(t *testing.T) {
 
 	result := RemoveEntryFromSlice(slice, "two")
 
-	if !reflect.DeepEqual(result, expectedResult){
+	if !reflect.DeepEqual(result, expectedResult) {
 		t.Errorf("Test Failed!, expected: %v, got: %v", expectedResult, result)
 	}
 
 	slice = []string{"one", "two", "three"}
 	result = RemoveEntryFromSlice(slice, "four")
 
-	if reflect.DeepEqual(result, expectedResult){
+	if reflect.DeepEqual(result, expectedResult) {
 		t.Errorf("Test Failed!, expected: %v, got: %v", slice, result)
 	}
 
@@ -74,16 +74,16 @@ func TestRemoveEntryFromSlice(t *testing.T) {
 
 	result = RemoveEntryFromSlice(slice, "two")
 
-	if !reflect.DeepEqual(result, expectedResult){
+	if !reflect.DeepEqual(result, expectedResult) {
 		t.Errorf("Test Failed!, expected: %v, got: %v", expectedResult, result)
 	}
 
-	slice = []string{"one", "two",  "two", "three"}
-	expectedResult = []string{"one", "two" , "three"}
+	slice = []string{"one", "two", "two", "three"}
+	expectedResult = []string{"one", "two", "three"}
 
 	result = RemoveEntryFromSlice(slice, "two")
 
-	if !reflect.DeepEqual(result, expectedResult){
+	if !reflect.DeepEqual(result, expectedResult) {
 		t.Errorf("Test Failed!, expected: %v, got: %v", expectedResult, result)
 	}
 }
@@ -100,7 +100,7 @@ func TestRemoveDuplicateEntries(t *testing.T) {
 
 	result := RemoveDuplicateEntries(slice)
 
-	if !reflect.DeepEqual(result, expectedResult){
+	if !reflect.DeepEqual(result, expectedResult) {
 		t.Errorf("Test Failed!, expected: %v, got: %v", expectedResult, result)
 	}
 }
@@ -122,7 +122,7 @@ func TestCountDuplicateEntries(t *testing.T) {
 
 	result := CountDuplicateEntries(slice)
 
-	if !reflect.DeepEqual(result, expectedResult){
+	if !reflect.DeepEqual(result, expectedResult) {
 		t.Errorf("Test Failed!, expected: %v, got: %v", expectedResult, result)
 	}
 }

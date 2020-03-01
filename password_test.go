@@ -16,8 +16,8 @@ func TestGetRandomPassword(t *testing.T) {
 
 	result := GetRandomPassword()
 
-	if !cRegex.MatchString(result){
-		t.Errorf("Test Failed!. Expected a 23 bit alphanumeric password but got a %v bit password %v", len(result), result )
+	if !cRegex.MatchString(result) {
+		t.Errorf("Test Failed!. Expected a 23 bit alphanumeric password but got a %v bit password %v", len(result), result)
 	}
 }
 

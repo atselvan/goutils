@@ -40,18 +40,18 @@ const (
 	SuccessMsg                = "Success OK"
 	PathNotFound              = "Request path '%s' not found"
 
-	WriteRespErrMsg                 = "Unable to write any response on the writer"
-	BasicAuthErrMsg                 = "401 unauthorized: Basic authentication is required"
-	InvalidProxyErrMsg              = "Invalid proxy details"
-	InvalidProxyErrDetail           = "When proxy is enabled, proxy host and proxy port should be provided"
-	InvalidProxyProtocolErrMsg      = "Invalid proxy protocol"
-	InvalidProxyProtocolErrDetail   = "Proxy protocol should be either http or https"
-	ProxyUrlParseErrMsg             = "Unable to parse proxy URL"
-	proxyUsedMsg                    = "Using proxy %s for making the request"
-	reqCreateErrMsg                 = "Error creating base request"
-	httpReqErrMsg                   = "Error making HTTP request"
-	httpReqReadErrMsg               = "Error reading request body"
-	httpRespReadErrMsg              = "Error reading response body"
+	WriteRespErrMsg               = "Unable to write any response on the writer"
+	BasicAuthErrMsg               = "401 unauthorized: Basic authentication is required"
+	InvalidProxyErrMsg            = "Invalid proxy details"
+	InvalidProxyErrDetail         = "When proxy is enabled, proxy host and proxy port should be provided"
+	InvalidProxyProtocolErrMsg    = "Invalid proxy protocol"
+	InvalidProxyProtocolErrDetail = "Proxy protocol should be either http or https"
+	ProxyUrlParseErrMsg           = "Unable to parse proxy URL"
+	proxyUsedMsg                  = "Using proxy %s for making the request"
+	reqCreateErrMsg               = "Error creating base request"
+	httpReqErrMsg                 = "Error making HTTP request"
+	httpReqReadErrMsg             = "Error reading request body"
+	httpRespReadErrMsg            = "Error reading response body"
 )
 
 var (
@@ -198,7 +198,9 @@ func (r *Request) NewRequest() error {
 
 	}
 
-	r.Request.SetBasicAuth(r.Auth.Username, r.Auth.Password)
+	if r.Auth.Username != "" && r.Auth.Password != "" {
+		r.Request.SetBasicAuth(r.Auth.Username, r.Auth.Password)
+	}
 
 	return err
 }

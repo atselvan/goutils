@@ -29,7 +29,7 @@ func TestIsValidDate(t *testing.T) {
 		"2020-04-31",
 	}
 
-	for _, v := range validDates{
+	for _, v := range validDates {
 		result, err := IsValidDate(v)
 		if result != true {
 			t.Errorf("Test Failed!, expected: %v, got: %v", true, result)
@@ -39,7 +39,7 @@ func TestIsValidDate(t *testing.T) {
 		}
 	}
 
-	for _, v := range invalidDates{
+	for _, v := range invalidDates {
 		result, err := IsValidDate(v)
 		if result != false {
 			t.Errorf("Test Failed!, expected: %v, got: %v", false, result)
@@ -71,7 +71,7 @@ func TestIsValidYear(t *testing.T) {
 		200,
 	}
 
-	for _, v := range validYears{
+	for _, v := range validYears {
 		result, err := IsValidYear(v)
 		if result != true {
 			t.Errorf("Test Failed!, expected: %v, got: %v", true, result)
@@ -81,7 +81,7 @@ func TestIsValidYear(t *testing.T) {
 		}
 	}
 
-	for _, v := range invalidYears{
+	for _, v := range invalidYears {
 		result, err := IsValidYear(v)
 		if result != false {
 			t.Errorf("Test Failed!, expected: %v, got: %v", false, result)
