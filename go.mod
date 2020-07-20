@@ -1,4 +1,4 @@
-module github.com/atselvan/go-utils
+module github.com/atselvan/goutils
 
 go 1.13
 
