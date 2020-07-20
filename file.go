@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -9,17 +10,79 @@ import (
 
 // File util constants
 const (
-	fileNotFoundErrMsg    = "File not found"
-	fileNotFoundErrDetail = "the file %s was not found"
-	fileReadErrMsg        = "Unable to read file"
-	fileCreateErrMsg      = "Unable to create a new file"
-	fileOpenErrMsg        = "Unable to open file"
-	fileWriteErrMsg       = "Unable to write to the file"
-	JsonMarshalErrMsg     = "JSON Marshal Error"
-	JsonUnmarshalErrMsg   = "JSON Unmarshal Error"
-	YamlMarshalErrMsg     = "YAML Marshal Error"
-	YamlUnmarshalErrMsg   = "YAML Unmarshal Error"
+	fileNotFoundErrMsg = "File '%s' was not found"
+	fileCreateErrMsg   = "Unable to create file '%s' : %v"
+	fileOpenErrMsg     = "Unable to open file '%s' : %v"
+	fileReadErrMsg     = "Unable to read file '%s' : %v"
+	fileWriteErrMsg    = "Unable to write to the file '%s' : %v"
 )
+
+// FileNotFoundError represents an error when the file is not found
+type FileNotFoundError string
+
+// Error returns the formatted FileNotFoundError
+func (fnf FileNotFoundError) Error() string {
+	return fmt.Sprintf(fileNotFoundErrMsg, string(fnf))
+}
+
+// FileCreateError represents an error when the code is not able to create a file
+type FileCreateError struct {
+	File string
+	Err  error
+}
+
+// Error returns the formatted FileCreateError
+func (fc FileCreateError) Error() string {
+	return fmt.Sprintf(fileCreateErrMsg, fc.File, fc.Err)
+}
+
+// FileOpenError represents an error when the code is not able to open the file
+type FileOpenError struct {
+	File string
+	Err  error
+}
+
+// Error returns the formatted FileOpenError
+func (fo FileOpenError) Error() string {
+	return fmt.Sprintf(fileOpenErrMsg, fo.File, fo.Err)
+}
+
+// FileReadError represents an error when the code is not able to read the file
+type FileReadError struct {
+	File string
+	Err  error
+}
+
+// Error returns the formatted FileReadError
+func (fr FileReadError) Error() string {
+	return fmt.Sprintf(fileReadErrMsg, fr.File, fr.Err)
+}
+
+// FileWriteError represents an error when the code is not able to write to the file
+type FileWriteError struct {
+	File string
+	Err  error
+}
+
+// Error returns the formatted FileWriteError
+func (fw FileWriteError) Error() string {
+	return fmt.Sprintf(fileWriteErrMsg, fw.File, fw.Err)
+}
+
+// ReadJsonFile reads a yaml file and puts the contents into the out variables
+// out variable should be a pointer to a valid struct
+// The method returns and error if reading a file or the unmarshal process fails
+func ReadJsonFile(filePath string, out interface{}) error {
+	data, err := ReadFile(filePath)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(data, out)
+	if err != nil {
+		return JSONUnMarshalError{Err: err}
+	}
+	return err
+}
 
 // ReadYamlFile reads a yaml file and puts the contents into the out variables
 // out variable should be a pointer to a valid struct
@@ -31,7 +94,7 @@ func ReadYamlFile(filePath string, out interface{}) error {
 	}
 	err = yaml.Unmarshal(data, out)
 	if err != nil {
-		return Error{Message: YamlUnmarshalErrMsg, Detail: err.Error()}.NewError()
+		return YAMLUnMarshalError{Err: err}
 	}
 	return err
 }
@@ -44,7 +107,24 @@ func ReadYamlFile(filePath string, out interface{}) error {
 func WriteYamlFile(filePath string, in interface{}) error {
 	data, err := yaml.Marshal(in)
 	if err != nil {
-		return Error{Message: YamlMarshalErrMsg, Detail: err.Error()}.NewError()
+		return YAMLMarshalError{Err: err}
+	}
+	err = WriteFile(filePath, data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// WriteJSONFile encodes the data from a input interface into json format
+// and writes the data into a file
+// The in interface should be an address to a valid struct
+// The method returns an error if there is an error with the json encode
+// or with writing to the file
+func WriteJSONFile(filePath string, in interface{}) error {
+	data, err := json.Marshal(in)
+	if err != nil {
+		return JSONMarshalError{Err: err}
 	}
 	err = WriteFile(filePath, data)
 	if err != nil {
@@ -55,20 +135,20 @@ func WriteYamlFile(filePath string, in interface{}) error {
 
 // CreateFile creates a new file
 // The method returns an error if there was an issue with creating an new file
-func CreateFile(filePath string) (*os.File, error) {
-	f, err := os.Create(filePath)
+func CreateFile(file string) (*os.File, error) {
+	f, err := os.Create(file)
 	if err != nil {
-		return f, Error{Message: fileCreateErrMsg, Detail: err.Error()}.NewError()
+		return f, FileCreateError{File: file, Err: err}
 	}
 	return f, nil
 }
 
 // OpenFile opens a file
 // The method returns an error if there is an issue with opening the file
-func OpenFile(filePath string) (*os.File, error) {
-	f, err := os.Open(filePath)
+func OpenFile(file string) (*os.File, error) {
+	f, err := os.Open(file)
 	if err != nil {
-		return f, Error{Message: fileOpenErrMsg, Detail: err.Error()}.NewError()
+		return f, FileOpenError{File: file, Err: err}
 	}
 	return f, nil
 }
@@ -76,11 +156,11 @@ func OpenFile(filePath string) (*os.File, error) {
 // ReadFile checks if a file exists and if it does tries to reads the contents of the
 // file and returns the data back
 // The method returns an error the file does not exist or if there was an error in reading the contents of the file
-func ReadFile(filePath string) ([]byte, error) {
-	if !FileExists(filePath) {
-		return nil, Error{Message: fileNotFoundErrMsg, Detail: fmt.Sprintf(fileNotFoundErrDetail, filePath)}.NewError()
-	} else if data, err := ioutil.ReadFile(filePath); err != nil {
-		return nil, Error{Message: fileReadErrMsg, Detail: err.Error()}.NewError()
+func ReadFile(file string) ([]byte, error) {
+	if !FileExists(file) {
+		return nil, FileNotFoundError(file)
+	} else if data, err := ioutil.ReadFile(file); err != nil {
+		return nil, FileReadError{File: file, Err: err}
 	} else {
 		return data, err
 	}
@@ -89,21 +169,21 @@ func ReadFile(filePath string) ([]byte, error) {
 // WriteFile creates a new file if the file does not exists and writes data into the file
 // The method returns an error if there was an issue creating a new file
 // or while writing data into the file
-func WriteFile(filePath string, data []byte) error {
+func WriteFile(file string, data []byte) error {
 	var (
 		err error
 	)
 
-	if !FileExists(filePath) {
-		_, err = CreateFile(filePath)
+	if !FileExists(file) {
+		_, err = CreateFile(file)
 		if err != nil {
 			return err
 		}
 	}
 
-	err = ioutil.WriteFile(filePath, data, 0644)
+	err = ioutil.WriteFile(file, data, 0644)
 	if err != nil {
-		return Error{Message: fileWriteErrMsg, Detail: err.Error()}.NewError()
+		return FileWriteError{File: file, Err: err}
 	}
 
 	return nil

@@ -2,53 +2,63 @@ package utils
 
 import (
 	"encoding/base64"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
 )
 
-// BasicAuth represents basic authentication parameters
-type BasicAuth struct {
-	Username string
-	Password string
-}
+const (
+	UsernameKey             = "username"
+	PasswordKey             = "password"
+	basicAuthRequiredErrMsg = "401 unauthorized: Basic authentication is required"
+)
 
-// Check checks if basic authentication credentials are provided to the API while making a http request
-// The method returns an error if the credentials are not provided
-func (b *BasicAuth) Check(r *http.Request) error {
-	if r.Header.Get("Authorization") == "" {
-		return Error{Message: BasicAuthErrMsg}.NewError()
+// BasicAuthRequired is a gin middleware for checking if basic authentication is provided in the request
+// The method writes the basic auth to the gin context
+// The method returns an error if basic authentication is not set
+func BasicAuthRequired() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		if ctx.Request.Header.Get("Authorization") == "" {
+			ctx.IndentedJSON(http.StatusUnauthorized, ErrResponse{Error: basicAuthRequiredErrMsg})
+			log := LogFormatter{Request: ctx.Request, StatusCode: http.StatusUnauthorized, Msg: basicAuthRequiredErrMsg}
+			log.Info().Println(log.Out)
+			ctx.Abort()
+			return
+		}
+
+		auth := strings.SplitN(ctx.Request.Header.Get("Authorization"), " ", 2)
+
+		if len(auth) != 2 || auth[0] != "Basic" {
+			ctx.IndentedJSON(http.StatusUnauthorized, ErrResponse{Error: basicAuthRequiredErrMsg})
+			log := LogFormatter{Request: ctx.Request, StatusCode: http.StatusUnauthorized, Msg: basicAuthRequiredErrMsg}
+			log.Info().Println(log.Out)
+			ctx.Abort()
+			return
+		}
+
+		dAuth, err := base64.StdEncoding.DecodeString(auth[1])
+		if err != nil {
+			ctx.IndentedJSON(http.StatusUnauthorized, ErrResponse{Error: basicAuthRequiredErrMsg})
+			log := LogFormatter{Request: ctx.Request, StatusCode: http.StatusUnauthorized, Msg: basicAuthRequiredErrMsg}
+			log.Info().Println(log.Out)
+			ctx.Abort()
+			return
+		}
+
+		cred := strings.SplitN(string(dAuth), ":", 2)
+
+		if len(cred) != 2 {
+			ctx.IndentedJSON(http.StatusUnauthorized, ErrResponse{Error: basicAuthRequiredErrMsg})
+			log := LogFormatter{Request: ctx.Request, StatusCode: http.StatusUnauthorized, Msg: basicAuthRequiredErrMsg}
+			log.Info().Println(log.Out)
+			ctx.Abort()
+			return
+		}
+
+		ctx.Set(UsernameKey, cred[0])
+		ctx.Set(PasswordKey, cred[1])
+
+		ctx.Next()
 	}
-	return nil
-}
-
-// Get checks if the Authorization header is set correctly in the request and will try to
-// get the Basic Authorization credentials (username and password) from the header
-// If the credentials are retrieved successfully then the method returns the username and password
-// The method returns an error if the header is not set or if the decoding fails
-func (b *BasicAuth) Get(r *http.Request) error {
-	if err := b.Check(r); err != nil {
-		return err
-	}
-
-	auth := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
-
-	if len(auth) != 2 || auth[0] != "Basic" {
-		return Error{Message: BasicAuthErrMsg}.NewError()
-	}
-
-	dAuth, err := base64.StdEncoding.DecodeString(auth[1])
-	if err != nil {
-		return Error{Message: BasicAuthErrMsg}.NewError()
-	}
-
-	cred := strings.SplitN(string(dAuth), ":", 2)
-
-	if len(cred) != 2 {
-		return Error{Message: BasicAuthErrMsg}.NewError()
-	}
-
-	b.Username = cred[0]
-	b.Password = cred[1]
-
-	return nil
 }

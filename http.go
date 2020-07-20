@@ -3,7 +3,6 @@ package utils
 import (
 	"bytes"
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -14,55 +13,22 @@ import (
 
 // HTTP util constants
 const (
-	GetMethod    = "GET"
-	PostMethod   = "POST"
-	PutMethod    = "PUT"
-	DeleteMethod = "DELETE"
-
-	SuccessStatusCode             = 200
-	CreatedStatusCode             = 201
-	FoundStatusCode               = 302
-	BadRequestStatusCode          = 400
-	UnauthorizedStatusCode        = 401
-	NotFoundStatusCode            = 404
-	MethodNotAllowedStatusCode    = 405
-	ConflictStatusCode            = 409
-	InternalServerErrorStatusCode = 500
-
-	SuccessStatus             = "200 OK"
-	CreatedStatus             = "201 Created"
-	FoundStatus               = "302 Found"
-	BadReqStatus              = "400 Bad Request"
-	UnauthorizedStatus        = "401 Unauthorized"
-	NotFoundStatus            = "404 Not Found"
-	MethodNotAllowedStatus    = "405 Method Not Allowed"
-	ConflictStatus            = "409 Conflict"
-	InternalServerErrorStatus = "500 Internal Server Error"
-	SuccessMsg                = "Success OK"
-	PathNotFound              = "Request path '%s' not found"
-
-	contentTypeKey = "Content-Type"
-	acceptKey = "Accept"
+	contentTypeKey             = "Content-Type"
+	acceptKey                  = "Accept"
 	applicationJsonContentType = "application/json"
-	textPlainContentType = "text/plain"
+	textPlainContentType       = "text/plain"
 
-	WriteRespErrMsg               = "Unable to write any response on the writer"
-	BasicAuthErrMsg               = "401 unauthorized: Basic authentication is required"
-	InvalidProxyErrMsg            = "Invalid proxy details"
-	InvalidProxyErrDetail         = "When proxy is enabled, proxy host and proxy port should be provided"
-	InvalidProxyProtocolErrMsg    = "Invalid proxy protocol"
-	InvalidProxyProtocolErrDetail = "Proxy protocol should be either http or https"
-	ProxyUrlParseErrMsg           = "Unable to parse proxy URL"
-	proxyUsedMsg                  = "Using proxy %s for making the request"
-	reqCreateErrMsg               = "Error creating base request"
-	httpReqErrMsg                 = "Error making HTTP request"
-	httpReqReadErrMsg             = "Error reading request body"
-	httpRespReadErrMsg            = "Error reading response body"
+	invalidProxyProtocolErrMsg = "Invalid proxy protocol '%s'. Valid values are %v"
+	proxyUrlParseErrMsg        = "Unable to parse proxy URL : %v"
+	proxyUsedMsg               = "Using proxy %s for making the request"
+	createRequestErrMsg        = "Error creating base http request : %v"
+	makeRequestErrMsg          = "Error making http request : %v"
+	readResponseErrMsg         = "Error reading response body : %v"
 )
 
 var (
-	// LogLevel log level setting. Default value is INFO
-	LogLevel = "INFO"
+	// Skip TLS
+	SkipTLS = false
 	// ProxyEnabled enable proxy settings
 	ProxyEnabled = false
 	// ProxyProtocol protocol of the proxy server, http or https
@@ -71,27 +37,56 @@ var (
 	ProxyHost string
 	// ProxyPort port of the proxy server
 	ProxyPort string
+	// validProtocols
+	validProtocols = []string{"http", "https"}
 )
 
-// Request represents an HTTP request
-type Request struct {
-	Url     string
-	Method  string
-	Auth    Auth
-	Body    RequestBody
-	HTTP    HTTP
-	Proxy   Proxy
-	Request *http.Request
-	Result  struct {
-		Body   []byte
-		Status string
-	}
+// InvalidProxyProtocolError represents an error when the proxy protocol is not valid
+type InvalidProxyProtocolError string
+
+// Error returns the formatted InvalidProxyProtocolError
+func (ipp InvalidProxyProtocolError) Error() string {
+	return fmt.Sprintf(invalidProxyProtocolErrMsg, string(ipp), validProtocols)
 }
 
-// RequestBody body represents the format of a request body
-type RequestBody struct {
-	Json []byte
-	Text string
+// ProxyUrlParseError represents an error when proxy url cannot be parsed
+type ProxyUrlParseError struct {
+	Err error
+}
+
+// Error returns the formatted ProxyUrlParseError
+func (pup ProxyUrlParseError) Error() string {
+	return fmt.Sprintf(proxyUrlParseErrMsg, pup.Err)
+}
+
+// CreateRequestError represents an error when creating a http request fails
+type CreateRequestError struct {
+	Err error
+}
+
+// Error returns teh formatted CreateRequestError
+func (cr CreateRequestError) Error() string {
+	return fmt.Sprintf(createRequestErrMsg, cr.Err)
+}
+
+// MakeRequestError represents an error when
+type MakeRequestError struct {
+	Err error
+}
+
+// Error returns teh formatted MakeRequestError
+func (mr MakeRequestError) Error() string {
+	return fmt.Sprintf(makeRequestErrMsg, mr.Err)
+}
+
+// ReadResponseError represents an error when the response cannot be read
+type ReadResponseError struct {
+	Err error
+}
+
+// Error returns teh formatted ReadResponseError
+func (rr ReadResponseError) Error() string {
+	return fmt.Sprintf(readResponseErrMsg, rr.Err)
 }
 
 // Auth represents authentication information
@@ -100,17 +95,10 @@ type Auth struct {
 	Password string
 }
 
-// Proxy represents proxy details
-type Proxy struct {
-	Enable   bool   `json:"enable" yaml:"enable"`
-	Protocol string `json:"protocol" yaml:"protocol"`
-	Host     string `json:"host" yaml:"host"`
-	Port     string `json:"port" yaml:"port"`
-}
-
-// HTTP represents HTTP configuration details
-type HTTP struct {
-	SkipTLS bool `json:"skip_tls" yaml:"skip_tls"`
+// RequestBody body represents the format of a request body
+type RequestBody struct {
+	Json []byte
+	Text string
 }
 
 // Result represents the result of a http request
@@ -119,20 +107,31 @@ type Result struct {
 	Status string
 }
 
+// Request represents an HTTP request
+type Request struct {
+	Url     string
+	Method  string
+	Auth    Auth
+	Body    RequestBody
+	Cnf     HTTPCnf
+	Request *http.Request
+	Result  Result
+}
+
 // ValidationResult represents the result of validation method
 type ValidationResult struct {
 	Valid    bool     `json:"valid"`
 	Messages []string `json:"messages"`
 }
 
-// Response represents an HTTP response message
+// Response represents a generic http response message
 type Response struct {
 	Message string `json:"message"`
 }
 
-// ErrResponse represents an error response
+// ErrResponse represents a generic http error response message
 type ErrResponse struct {
-	Error Error `json:"error"`
+	Error string `json:"error"`
 }
 
 // GetRequesterIP gets the requester IP from the request headers and returns the IP
@@ -147,23 +146,10 @@ func GetRequesterIP(r *http.Request) string {
 	return ip
 }
 
-// ReadRequestBody reads request body in json format, unmarshal's the json and writes the data into the out variable
-// out variable should be a pointer to a structure into which the values are un-marshaled
-func ReadRequestBody(r *http.Request, out interface{}) error {
-
-	reqBody, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		return Error{Message: httpReqReadErrMsg, Detail: err.Error()}.NewError()
-	}
-
-	if len(reqBody) > 0 {
-		err := json.Unmarshal(reqBody, out)
-		if err != nil {
-			return Error{Message: JsonUnmarshalErrMsg, Detail: err.Error()}.NewError()
-		}
-	}
-
-	return nil
+// StatusText returns a text for the HTTP status code. It returns the empty
+// string if the code is unknown.
+func StatusString(code int) string {
+	return fmt.Sprintf("%d %s", code, http.StatusText(code))
 }
 
 // NewRequest creates a base http request based on the URL method and credentials provided in the Request struct
@@ -173,7 +159,7 @@ func (r *Request) NewRequest() error {
 
 	var err error
 
-	if r.HTTP.SkipTLS {
+	if r.Cnf.SkipTLS {
 		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	}
 
@@ -182,7 +168,7 @@ func (r *Request) NewRequest() error {
 		r.Request, err = http.NewRequest(r.Method, r.Url, bytes.NewBuffer(r.Body.Json))
 
 		if err != nil {
-			return Error{Message: reqCreateErrMsg, Detail: err.Error()}.NewError()
+			return CreateRequestError{Err: err}
 		}
 
 		r.Request.Header.Set(contentTypeKey, applicationJsonContentType)
@@ -193,7 +179,7 @@ func (r *Request) NewRequest() error {
 		r.Request, err = http.NewRequest(r.Method, r.Url, strings.NewReader(r.Body.Text))
 
 		if err != nil {
-			return Error{Message: reqCreateErrMsg, Detail: err.Error()}.NewError()
+			return CreateRequestError{Err: err}
 		}
 
 		r.Request.Header.Set(contentTypeKey, textPlainContentType)
@@ -203,7 +189,7 @@ func (r *Request) NewRequest() error {
 		r.Request, err = http.NewRequest(r.Method, r.Url, nil)
 
 		if err != nil {
-			return Error{Message: reqCreateErrMsg, Detail: err.Error()}.NewError()
+			return CreateRequestError{Err: err}
 		}
 
 	}
@@ -215,25 +201,6 @@ func (r *Request) NewRequest() error {
 	return err
 }
 
-// ValidateProxyDetails check if required proxy details are provided
-// The method returns an error if proxy details are not valid
-func (r *Request) validateProxyDetails() error {
-	if strings.TrimSpace(r.Proxy.Protocol) == "" {
-		r.Proxy.Protocol = "https"
-	}
-	if r.Proxy.Protocol != "http" && r.Proxy.Protocol != "https" {
-		return Error{Message: InvalidProxyProtocolErrMsg, Detail: InvalidProxyProtocolErrDetail}.NewError()
-	}
-	if strings.TrimSpace(r.Proxy.Host) == "" || strings.TrimSpace(r.Proxy.Port) == "" {
-		return Error{Message: InvalidProxyErrMsg, Detail: InvalidProxyErrDetail}.NewError()
-	}
-	return nil
-}
-
-func (r *Request) getProxyUrl() string {
-	return fmt.Sprintf("%s://%s:%s", r.Proxy.Protocol, r.Proxy.Host, r.Proxy.Port)
-}
-
 // HttpRequest makes an http request to a remote server
 // The response body and the status of the http response is registered into the request struct
 // The method returns an error if there is a problem with making the request or while
@@ -242,17 +209,17 @@ func (r *Request) HttpRequest() error {
 
 	client := &http.Client{}
 
-	if r.Proxy.Enable == true {
-		if err := r.validateProxyDetails(); err != nil {
+	if r.Cnf.ProxyEnable == true {
+		if err := r.Cnf.Validate(); err != nil {
 			return err
 		}
-		proxyUrl, err := url.Parse(r.getProxyUrl())
 
+		proxyUrl, err := url.Parse(r.Cnf.GetProxyUrl())
 		if err != nil {
-			return Error{Message: ProxyUrlParseErrMsg, Detail: err.Error()}.NewError()
+			return ProxyUrlParseError{Err: err}
 		}
 
-		log := Logger{Message: fmt.Sprintf(proxyUsedMsg, proxyUrl)}
+		log := LogFormatter{Msg: fmt.Sprintf(proxyUsedMsg, proxyUrl)}
 		log.Debug().Println(log.Out)
 
 		transport := &http.Transport{
@@ -264,95 +231,42 @@ func (r *Request) HttpRequest() error {
 
 	authorisation := r.Request.Header.Get("Authorization")
 	r.Request.Header.Set("Authorization", "")
-	log := Logger{Message: fmt.Sprintf("Request : %v", r.Request)}
+	log := LogFormatter{Msg: fmt.Sprintf("Request : %v", r.Request)}
 	log.Debug().Println(log.Out)
-	log = Logger{Message: fmt.Sprintf("Request Url : %v", r.Request.URL)}
+	log = LogFormatter{Msg: fmt.Sprintf("Request Url : %v", r.Request.URL)}
 	log.Debug().Println(log.Out)
-	log = Logger{Message: fmt.Sprintf("Request Headers : %v", r.Request.Header)}
+	log = LogFormatter{Msg: fmt.Sprintf("Request Headers : %v", r.Request.Header)}
 	log.Debug().Println(log.Out)
-	log = Logger{Message: fmt.Sprintf("Request Body : %v", r.Request.Body)}
+	log = LogFormatter{Msg: fmt.Sprintf("Request Body : %v", r.Request.Body)}
 	log.Debug().Println(log.Out)
 	r.Request.Header.Set("Authorization", authorisation)
 
 	resp, err := client.Do(r.Request)
 	if err != nil {
-		return Error{Message: httpReqErrMsg, Detail: err.Error()}.NewError()
+		return MakeRequestError{Err: err}
 	}
 
 	r.Result.Body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return Error{Message: httpRespReadErrMsg, Detail: err.Error()}.NewError()
+		return ReadResponseError{Err: err}
 	}
 
 	r.Result.Status = resp.Status
 
 	resp.Header.Set("Authorization", "")
-	log = Logger{Message: fmt.Sprintf("Response : %v", resp)}
+	log = LogFormatter{Msg: fmt.Sprintf("Response : %v", resp)}
 	log.Debug().Println(log.Out)
-	log = Logger{Message: fmt.Sprintf("Response Headers : %v", resp.Header)}
+	log = LogFormatter{Msg: fmt.Sprintf("Response Headers : %v", resp.Header)}
 	log.Debug().Println(log.Out)
-	log = Logger{Message: fmt.Sprintf("Response Status : %v", resp.Status)}
+	log = LogFormatter{Msg: fmt.Sprintf("Response Status : %v", resp.Status)}
 	log.Debug().Println(log.Out)
-	log = Logger{Message: fmt.Sprintf("Response Body : %v", string(r.Result.Body))}
+	log = LogFormatter{Msg: fmt.Sprintf("Response Body : %v", string(r.Result.Body))}
 	log.Debug().Println(log.Out)
 
 	err = resp.Body.Close()
 	if err != nil {
-		return Error{Message: httpReqErrMsg, Detail: err.Error()}.NewError()
+		return MakeRequestError{Err: err}
 	}
 
 	return err
-}
-
-// WriteHTTPResp writes an http response onto the response writer
-func WriteHTTPResp(w http.ResponseWriter, r *http.Request, responseCode int, response interface{}) {
-	w.Header().Set(contentTypeKey, applicationJsonContentType)
-
-	out, err := json.MarshalIndent(response, "", "  ")
-	if err != nil {
-		log := Logger{Message: JsonMarshalErrMsg, Err: err}
-		log.Error().Println(log.Out)
-
-		w.WriteHeader(InternalServerErrorStatusCode)
-		_, err = w.Write(out)
-		if err != nil {
-			log := Logger{Message: WriteRespErrMsg, Err: err}
-			log.Error().Println(log.Out)
-		}
-	}
-
-	w.WriteHeader(responseCode)
-	_, err = w.Write(out)
-
-	if err != nil {
-		l := Logger{Message: WriteRespErrMsg, Err: err}
-		l.Error().Println(l.Out)
-
-		w.WriteHeader(InternalServerErrorStatusCode)
-		_, err = w.Write(out)
-		if err != nil {
-			log := Logger{Message: WriteRespErrMsg, Err: err}
-			log.Error().Println(log.Out)
-		}
-	}
-}
-
-// WriteInfoResp writes information onto the response writer
-func WriteInfoResp(w http.ResponseWriter, r *http.Request, responseCode int, message string) {
-	WriteHTTPResp(w, r, responseCode, Response{Message: message})
-}
-
-// WriteErrResp writes error response onto the response writer
-func WriteErrResp(w http.ResponseWriter, r *http.Request, responseCode int, err error) {
-	var errResponse Error
-	errorInfo := strings.SplitN(err.Error(), ":", 2)
-	if len(errorInfo) == 2 {
-		errResponse = Error{
-			Message: strings.TrimSpace(errorInfo[0]),
-			Detail:  strings.TrimSpace(errorInfo[1]),
-		}
-	} else {
-		errResponse = Error{Message: errorInfo[0]}
-	}
-	WriteHTTPResp(w, r, responseCode, ErrResponse{errResponse})
 }
